@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Say my name!! </string>
+    <string name="salute">You are goddamn right. I am %s </string>
+    <string name="sayMyName">Say my name </string>
+</resources>
