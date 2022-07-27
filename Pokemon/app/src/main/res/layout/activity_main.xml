@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="#F11E0E"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/imgMenu"
+                android:layout_width="match_parent"
+                android:layout_height="307dp"
+                android:layout_marginTop="4dp"
+                android:elevation="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <Button
+                android:id="@+id/btn_howToPlay"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:text="@string/btn_howToPlay"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_play" />
+
+            <Button
+                android:id="@+id/btn_highscore"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:padding="20dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:text="@string/btn_highscore"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.497"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_howToPlay" />
+
+            <Button
+                android:id="@+id/btn_play"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:text="@string/btn_play"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/imgMenu" />
+
+            <Button
+                android:id="@+id/btn_credits"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:text="@string/btn_credits"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_highscore" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

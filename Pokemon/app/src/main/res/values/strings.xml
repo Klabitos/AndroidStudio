@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pokemon</string>
+    <string name="btn_play">Play Game</string>
+    <string name="btn_howToPlay">How to Play</string>
+    <string name="btn_highscore">Highscore</string>
+    <string name="btn_credits">Credits</string>
+</resources>
