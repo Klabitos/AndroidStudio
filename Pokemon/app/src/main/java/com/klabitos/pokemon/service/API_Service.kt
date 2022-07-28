@@ -10,6 +10,6 @@ interface API_Service {
     @GET(".") //SI NO PASAMOS PARAMENTROS
     suspend fun getAllPokemon(): Response<PokemonResponse>
 
-    @GET //SI NO PASAMOS PARAMENTROS
+    @GET //SI  PASAMOS PARAMENTROS
     suspend fun getAPokemon(@Url id:String): Response<Pokemon>
 }

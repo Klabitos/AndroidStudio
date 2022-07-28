@@ -1,5 +1,6 @@
 package com.klabitos.pokemon
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.AudioRecord.MetricsConstants.SOURCE
@@ -43,11 +44,6 @@ class PlayWindow : AppCompatActivity() {
         getLAllPokemonThisRound()
     }
 
-    private fun init(){
-        binding.goBack.setOnClickListener{ goBack() }
-        listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
-    }
-
     private fun getLAllPokemonThisRound(){
         chosenPokemon = (0..3).random()
         listOfPosibleAnswers = arrayListOf<Int>()
@@ -62,24 +58,38 @@ class PlayWindow : AppCompatActivity() {
         Log.e("chosen", chosenPokemon.toString())
     }
 
-    private fun goBack(){
-        val intent = Intent(this, MainActivity::class.java) //Creamos un intent con el contexto y el nombre de la pantalla/actividad a la que queremos ir
-        startActivity(intent)
-    }
-
     private fun loadImages(){
-        loadImage(this.resources.openRawResource(R.raw.backgroundplay), binding.imgbackgroundGuess)
-        loadImage(this.resources.openRawResource(R.raw.pokeball), binding.imgbackgroundpokeball)
+        Utils().loadImage(this.resources.openRawResource(R.raw.backgroundplay), binding.imgbackgroundGuess)
+        Utils().loadImage(this.resources.openRawResource(R.raw.pokeball), binding.imgbackgroundpokeball)
         binding.imgPokemon.loadSvg("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${listOfPosibleAnswers[chosenPokemon]}.svg")
     }
 
+    private fun getSinglePokemon(id:Int){
 
-    private fun loadImage(image: InputStream, idBindingImage: ImageView){
-        val bitmap = BitmapFactory.decodeStream(image)
-        idBindingImage.setImageBitmap(bitmap)
+        CoroutineScope(Dispatchers.IO).launch {
+            val call = Utils().getRetrofit().create(API_Service::class.java).getAPokemon(id.toString())
+            val pokemonResponse = call.body()
+            runOnUiThread{
+                if(call.isSuccessful){
+                    val pokemonName = pokemonResponse?.name ?: "To be defined"
+                    Log.e("name", pokemonName)
+                    listOfBtn[indexCounter.getAndAdd(1)].text = pokemonName
+                }
+            }
+        }
     }
 
 
+
+    private fun init(){
+        binding.goBack.setOnClickListener{ goHome(this) }
+        listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
+    }
+
+    private fun goHome(context: Context){
+        val intent = Intent(context, MainActivity::class.java) //Creamos un intent con el contexto y el nombre de la pantalla/actividad a la que queremos ir
+        startActivity(intent)
+    }
 
     fun AppCompatImageView.loadSvg(url: String) {
         val imageLoader = ImageLoader.Builder(this.context)
@@ -96,28 +106,4 @@ class PlayWindow : AppCompatActivity() {
         imageLoader.enqueue(request)
     }
 
-
-
-
-    private fun getSinglePokemon(id:Int){
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val call = getRetrofit().create(API_Service::class.java).getAPokemon(id.toString())
-            val pokemonResponse = call.body()
-            runOnUiThread{
-                if(call.isSuccessful){
-                    val pokemonName = pokemonResponse?.name ?: "To be defined"
-                    Log.e("name", pokemonName)
-                    listOfBtn[indexCounter.getAndAdd(1)].text = pokemonName
-                }
-            }
-        }
-    }
-
-    private fun getRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("https://pokeapi.co/api/v2/pokemon/") //importante que la base acabae en /
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
 }
