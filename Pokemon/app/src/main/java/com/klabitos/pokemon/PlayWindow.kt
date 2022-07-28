@@ -2,11 +2,19 @@ package com.klabitos.pokemon
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.media.AudioRecord.MetricsConstants.SOURCE
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
+import coil.ImageLoader
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.klabitos.pokemon.databinding.ActivityPlayWindowBinding
 import com.klabitos.pokemon.model.Pokemon
 import com.klabitos.pokemon.service.API_Service
@@ -26,35 +34,30 @@ class PlayWindow : AppCompatActivity() {
     private var listOfBtn= arrayListOf<Button>()
     private var indexCounter : AtomicInteger = AtomicInteger(0)
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayWindowBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.goBack.setOnClickListener{ goBack() }
-
         init()
-        getLAllShownPokemonRound()
-        loadImages()
-
-        for((index,pokemon) in listOfPosibleAnswers.withIndex()){
-            getSinglePokemon(pokemon)
-        }
-
+        getLAllPokemonThisRound()
     }
 
     private fun init(){
+        binding.goBack.setOnClickListener{ goBack() }
         listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
     }
 
-    private fun getLAllShownPokemonRound(){
-        chosenPokemon = (0..4).random()
+    private fun getLAllPokemonThisRound(){
+        chosenPokemon = (0..3).random()
         listOfPosibleAnswers = arrayListOf<Int>()
         for(i in 1..4){
             listOfPosibleAnswers.add((0..649).random())
         }
+        for(pokemon in listOfPosibleAnswers){
+            getSinglePokemon(pokemon)
+        }
+        loadImages()
         Log.e("listOfShown", listOfPosibleAnswers.toString())
         Log.e("chosen", chosenPokemon.toString())
     }
@@ -67,7 +70,7 @@ class PlayWindow : AppCompatActivity() {
     private fun loadImages(){
         loadImage(this.resources.openRawResource(R.raw.backgroundplay), binding.imgbackgroundGuess)
         loadImage(this.resources.openRawResource(R.raw.pokeball), binding.imgbackgroundpokeball)
-        loadImage(this.resources.openRawResource(R.raw.test), binding.imgPokemon)
+        binding.imgPokemon.loadSvg("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${listOfPosibleAnswers[chosenPokemon]}.svg")
     }
 
 
@@ -76,11 +79,31 @@ class PlayWindow : AppCompatActivity() {
         idBindingImage.setImageBitmap(bitmap)
     }
 
+
+
+    fun AppCompatImageView.loadSvg(url: String) {
+        val imageLoader = ImageLoader.Builder(this.context)
+            .componentRegistry { add(SvgDecoder(this@loadSvg.context)) }
+            .build()
+
+        val request = ImageRequest.Builder(this.context)
+            .crossfade(true)
+            .crossfade(500)
+            .data(url)
+            .target(this)
+            .build()
+
+        imageLoader.enqueue(request)
+    }
+
+
+
+
     private fun getSinglePokemon(id:Int){
 
         CoroutineScope(Dispatchers.IO).launch {
             val call = getRetrofit().create(API_Service::class.java).getAPokemon(id.toString())
-            val pokemonResponse = call?.body()
+            val pokemonResponse = call.body()
             runOnUiThread{
                 if(call.isSuccessful){
                     val pokemonName = pokemonResponse?.name ?: "To be defined"
@@ -97,8 +120,4 @@ class PlayWindow : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-
-
-
-
 }
