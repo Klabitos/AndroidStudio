@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.cardview.widget.CardView
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
@@ -30,10 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger
 class PlayWindow : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlayWindowBinding
-    private var chosenPokemon = -1
+    private var chosenPokemon = 0
     private var listOfPosibleAnswers = arrayListOf<Int>()
     private var listOfBtn= arrayListOf<Button>()
+    private var correctName= ""
     private var indexCounter : AtomicInteger = AtomicInteger(0)
+    private var score=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,19 +44,25 @@ class PlayWindow : AppCompatActivity() {
         setContentView(binding.root)
 
         init()
-        getLAllPokemonThisRound()
+        loadImages()
+        getAllPokemonThisRound()
     }
 
-    private fun getLAllPokemonThisRound(){
+    fun getAllPokemonThisRound(){
+        esconderTodasCards()
+        indexCounter.set(0)
         chosenPokemon = (0..3).random()
+        listOfPosibleAnswers.clear()
         listOfPosibleAnswers = arrayListOf<Int>()
         for(i in 1..4){
             listOfPosibleAnswers.add((0..649).random())
         }
-        for(pokemon in listOfPosibleAnswers){
-            getSinglePokemon(pokemon)
+
+        for(i in 0..3){
+            Log.e("introduction", listOfPosibleAnswers[i].toString())
+            getSinglePokemon(listOfPosibleAnswers[i])
         }
-        loadImages()
+        binding.imgPokemon.loadSvg("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${listOfPosibleAnswers[chosenPokemon]}.svg")
         Log.e("listOfShown", listOfPosibleAnswers.toString())
         Log.e("chosen", chosenPokemon.toString())
     }
@@ -61,29 +70,60 @@ class PlayWindow : AppCompatActivity() {
     private fun loadImages(){
         Utils().loadImage(this.resources.openRawResource(R.raw.backgroundplay), binding.imgbackgroundGuess)
         Utils().loadImage(this.resources.openRawResource(R.raw.pokeball), binding.imgbackgroundpokeball)
-        binding.imgPokemon.loadSvg("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${listOfPosibleAnswers[chosenPokemon]}.svg")
+
     }
 
     private fun getSinglePokemon(id:Int){
-
+        Log.e("id", id.toString())
         CoroutineScope(Dispatchers.IO).launch {
             val call = Utils().getRetrofit().create(API_Service::class.java).getAPokemon(id.toString())
             val pokemonResponse = call.body()
             runOnUiThread{
                 if(call.isSuccessful){
                     val pokemonName = pokemonResponse?.name ?: "To be defined"
-                    Log.e("name", pokemonName)
-                    listOfBtn[indexCounter.getAndAdd(1)].text = pokemonName
+                    if(id.toString()==listOfPosibleAnswers[chosenPokemon].toString())correctName=pokemonName
+                    listOfBtn[indexCounter.getAndAdd(1)].text = pokemonName //al ser atomica espera a usarse para luego añadir lo que sea
+
                 }
             }
         }
     }
 
+    private fun esconderTodasCards(){
+        binding.imgPokemon.brightness=0F;
+        binding.cardContinue.visibility=CardView.INVISIBLE
+        binding.cardGoodAnswer.visibility=CardView.INVISIBLE
+        binding.cardBadAnswer.visibility=CardView.INVISIBLE
+
+    }
+
+
+    private fun comprobarCorrecto(button: Button){
+        binding.imgPokemon.brightness=1F;
+        binding.cardContinue.visibility=CardView.VISIBLE
+
+        Log.e("actual",button.text.toString() )
+        Log.e("registro", correctName)
+        if(button.text.toString()==correctName){
+            binding.cardGoodAnswer.visibility=CardView.VISIBLE
+            score+=100
+            binding.score.text="Score: ${score}"
+        }else{
+            binding.cardBadAnswer.visibility=CardView.VISIBLE
+        }
+
+    }
+
 
 
     private fun init(){
+        score=0
         binding.goBack.setOnClickListener{ goHome(this) }
+        binding.btnContinue.setOnClickListener{getAllPokemonThisRound()}
         listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
+        for(button in listOfBtn){
+            button.setOnClickListener { comprobarCorrecto(button) }
+        }
     }
 
     private fun goHome(context: Context){
