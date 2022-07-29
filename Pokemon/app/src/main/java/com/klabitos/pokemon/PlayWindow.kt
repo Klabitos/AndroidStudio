@@ -8,8 +8,11 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.cardview.widget.CardView
 import coil.ImageLoader
@@ -37,6 +40,7 @@ class PlayWindow : AppCompatActivity() {
     private var correctName= ""
     private var indexCounter : AtomicInteger = AtomicInteger(0)
     private var score=0
+    private var clicked=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +51,16 @@ class PlayWindow : AppCompatActivity() {
         loadImages()
         getAllPokemonThisRound()
     }
+    private fun init(){
+        score=0
+        binding.score.text="Score: $score"
+        binding.goBack.setOnClickListener{ goHome(this) }
+        listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
+        for(button in listOfBtn){
+            button.setOnClickListener { comprobarCorrecto(button) }
+        }
+    }
+
 
     fun getAllPokemonThisRound(){
         esconderTodasCards()
@@ -57,14 +71,11 @@ class PlayWindow : AppCompatActivity() {
         for(i in 1..4){
             listOfPosibleAnswers.add((0..649).random())
         }
-
         for(i in 0..3){
-            Log.e("introduction", listOfPosibleAnswers[i].toString())
             getSinglePokemon(listOfPosibleAnswers[i])
         }
         binding.imgPokemon.loadSvg("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${listOfPosibleAnswers[chosenPokemon]}.svg")
-        Log.e("listOfShown", listOfPosibleAnswers.toString())
-        Log.e("chosen", chosenPokemon.toString())
+
     }
 
     private fun loadImages(){
@@ -91,39 +102,30 @@ class PlayWindow : AppCompatActivity() {
 
     private fun esconderTodasCards(){
         binding.imgPokemon.brightness=0F;
-        binding.cardContinue.visibility=CardView.INVISIBLE
-        binding.cardGoodAnswer.visibility=CardView.INVISIBLE
-        binding.cardBadAnswer.visibility=CardView.INVISIBLE
+        clicked=false
 
     }
 
 
     private fun comprobarCorrecto(button: Button){
-        binding.imgPokemon.brightness=1F;
-        binding.cardContinue.visibility=CardView.VISIBLE
-
-        Log.e("actual",button.text.toString() )
-        Log.e("registro", correctName)
-        if(button.text.toString()==correctName){
-            binding.cardGoodAnswer.visibility=CardView.VISIBLE
-            score+=100
-            binding.score.text="Score: ${score}"
-        }else{
-            binding.cardBadAnswer.visibility=CardView.VISIBLE
+        if(!clicked){
+            clicked=true;
+            binding.imgPokemon.brightness=1F;
+            showDialog(button.text.toString()==correctName)
         }
-
     }
 
 
-
-    private fun init(){
-        score=0
-        binding.goBack.setOnClickListener{ goHome(this) }
-        binding.btnContinue.setOnClickListener{getAllPokemonThisRound()}
-        listOfBtn = arrayListOf<Button>(binding.btnName1, binding.btnName2, binding.btnName3, binding.btnName4);
-        for(button in listOfBtn){
-            button.setOnClickListener { comprobarCorrecto(button) }
-        }
+    private fun showDialog(haveWon : Boolean){
+        AlertDialog.Builder(this).setCancelable(true).apply {
+            val v = LayoutInflater.from(this@PlayWindow).inflate(R.layout.item_message, null, false)
+            if (haveWon) score+=100
+            v.findViewById<TextView>(R.id.scoreText).text="Score: $score"
+            binding.score.text="Score: $score"
+            v.findViewById<TextView>(R.id.goodAnswered).text = getString(if (haveWon) R.string.you_win else R.string.you_lose)
+            setView(v) //d¡
+            setOnDismissListener { getAllPokemonThisRound() }
+        }.show()
     }
 
     private fun goHome(context: Context){
