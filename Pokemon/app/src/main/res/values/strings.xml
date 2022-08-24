@@ -4,6 +4,8 @@
     <string name="btn_howToPlay">How to Play</string>
     <string name="btn_highscore">Highscore</string>
     <string name="btn_credits">Credits</string>
-    <string name="you_win">¡Has Ganado!</string>
-    <string name="you_lose">¡Has Fallado!</string>
+    <string name="you_win">¡Has acertado!</string>
+    <string name="you_lose">¡Has perdido!</string>
+    <string name="restart">Re-start</string>
+    <string name="record">New Record!!</string>
 </resources>

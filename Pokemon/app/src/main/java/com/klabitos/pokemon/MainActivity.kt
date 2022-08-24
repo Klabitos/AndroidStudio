@@ -3,8 +3,10 @@ package com.klabitos.pokemon
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.klabitos.pokemon.databinding.ActivityMainBinding
+import com.klabitos.pokemon.sharedPreferences.SharedApp
 import java.io.InputStream
 
 
@@ -16,9 +18,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        binding.maxScore.text= "Highscore: ${SharedApp.prefs.maxHighscore}, ${SharedApp.prefs.NAME}"
         listeners()
-        loadImages()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.maxScore.text= "Highscore: ${SharedApp.prefs.maxHighscore}, ${SharedApp.prefs.NAME}"
     }
 
     private fun listeners(){
@@ -30,9 +36,5 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun loadImages(){
-        val imageStream: InputStream = this.resources.openRawResource(R.raw.whoisthat)
-        val bitmap = BitmapFactory.decodeStream(imageStream)
-        binding.imgMenu.setImageBitmap(bitmap)
-    }
+
 }

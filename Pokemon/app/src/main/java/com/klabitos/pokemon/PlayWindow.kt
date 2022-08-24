@@ -1,34 +1,24 @@
 package com.klabitos.pokemon
 
 import android.content.Context
-import android.content.Intent
-import android.graphics.BitmapFactory
-import android.media.AudioRecord.MetricsConstants.SOURCE
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.cardview.widget.CardView
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.klabitos.pokemon.databinding.ActivityPlayWindowBinding
-import com.klabitos.pokemon.model.Pokemon
 import com.klabitos.pokemon.service.API_Service
+import com.klabitos.pokemon.sharedPreferences.SharedApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.io.InputStream
 import java.util.concurrent.atomic.AtomicInteger
 
 class PlayWindow : AppCompatActivity() {
@@ -85,7 +75,6 @@ class PlayWindow : AppCompatActivity() {
     }
 
     private fun getSinglePokemon(id:Int){
-        Log.e("id", id.toString())
         CoroutineScope(Dispatchers.IO).launch {
             val call = Utils().getRetrofit().create(API_Service::class.java).getAPokemon(id.toString())
             val pokemonResponse = call.body()
@@ -103,7 +92,6 @@ class PlayWindow : AppCompatActivity() {
     private fun esconderTodasCards(){
         binding.imgPokemon.brightness=0F;
         clicked=false
-
     }
 
 
@@ -118,19 +106,47 @@ class PlayWindow : AppCompatActivity() {
 
     private fun showDialog(haveWon : Boolean){
         AlertDialog.Builder(this).setCancelable(true).apply {
-            val v = LayoutInflater.from(this@PlayWindow).inflate(R.layout.item_message, null, false)
-            if (haveWon) score+=100
-            v.findViewById<TextView>(R.id.scoreText).text="Score: $score"
+            val highscore = SharedApp.prefs.maxHighscore!! <score.toString()
+            if (haveWon){
+                val v = LayoutInflater.from(this@PlayWindow).inflate(R.layout.correct_message, null, false)
+                score+=100
+                v.findViewById<TextView>(R.id.scoreText).text="Score: $score"
+                setView(v)
+                setOnDismissListener { getAllPokemonThisRound() }
+            }else{
+                val v = LayoutInflater.from(this@PlayWindow).inflate(R.layout.fail_message, null, false)
+                var personHighscore = v.findViewById<TextView>(R.id.personHighscore)
+                if(highscore) {
+                    v.findViewById<TextView>(R.id.newRecord).visibility=View.VISIBLE
+                    personHighscore.visibility=View.VISIBLE
+                }
+                v.findViewById<TextView>(R.id.scoreText).text="Score: $score"
+                v.findViewById<TextView>(R.id.correctAnswer).text="The correct answer was: ${Utils().capitalizeFirstLetter(correctName)}"
+
+                setView(v)
+
+                setOnDismissListener {
+                    if(highscore) newHighscore(personHighscore.text.toString())
+                    finish()
+                }
+            }
             binding.score.text="Score: $score"
-            v.findViewById<TextView>(R.id.goodAnswered).text = getString(if (haveWon) R.string.you_win else R.string.you_lose)
-            setView(v) //d¡
-            setOnDismissListener { getAllPokemonThisRound() }
         }.show()
     }
 
+    private fun newHighscore(name:String){
+        Log.e("Nombre",name)
+        SharedApp.prefs.maxHighscore=score.toString()
+        if(name!=""){
+            SharedApp.prefs.name=name
+        }else{
+            SharedApp.prefs.name="DEFAULT"
+        }
+
+    }
+
     private fun goHome(context: Context){
-        val intent = Intent(context, MainActivity::class.java) //Creamos un intent con el contexto y el nombre de la pantalla/actividad a la que queremos ir
-        startActivity(intent)
+        finish()
     }
 
     fun AppCompatImageView.loadSvg(url: String) {

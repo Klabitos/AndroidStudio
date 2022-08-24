@@ -20,4 +20,8 @@ class Utils {
             .build()
     }
 
+    fun capitalizeFirstLetter(word:String):String{
+        return word.substring(0,1).uppercase()+word.substring(1).lowercase()
+    }
+
 }
